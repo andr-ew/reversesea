@@ -18,6 +18,7 @@ function pattern.new()
   i.count = 0
   i.step = 0
   i.time_factor = 1
+  i.reverse = false
 
   i.metro = metro.init(function() i:next_event() end,1,1)
 
@@ -38,12 +39,18 @@ function pattern:clear()
   self.count = 0
   self.step = 0
   self.time_factor = 1
+  self.reverse = false
 end
 
 --- adjust the time factor of this pattern.
 -- @tparam number f time factor
 function pattern:set_time_factor(f)
   self.time_factor = f or 1
+end
+--- adjust the direction of this pattern.
+-- @tparam boolean reverse
+function pattern:set_reverse(reverse)
+  self.reverse = reverse
 end
 
 --- start recording
@@ -92,18 +99,18 @@ function pattern:rec_event(e)
   self.event[c] = e
 end
 
---- add overdub event
-function pattern:overdub_event(e)
-  local c = self.step + 1
-  local t = self.prev_time
-  self.prev_time = util.time()
-  local a = self.time[c-1]
-  self.time[c-1] = self.prev_time - t
-  table.insert(self.time, c, a - self.time[c-1])
-  table.insert(self.event, c, e)
-  self.step = self.step + 1
-  self.count = self.count + 1
-end
+-- add overdub event
+-- function pattern:overdub_event(e)
+--   local c = self.step + 1
+--   local t = self.prev_time
+--   self.prev_time = util.time()
+--   local a = self.time[c-1]
+--   self.time[c-1] = self.prev_time - t
+--   table.insert(self.time, c, a - self.time[c-1])
+--   table.insert(self.event, c, e)
+--   self.step = self.step + 1
+--   self.count = self.count + 1
+-- end
 
 --- start this pattern
 function pattern:start()
@@ -121,13 +128,12 @@ end
 --- process next event
 function pattern:next_event()
   self.prev_time = util.time()
-  if self.step == self.count then self.step = 1
-  else self.step = self.step + 1 end
-  --print("next step "..self.step)
-  --event_exec(self.event[self.step])
+
+  self.step = util.wrap(self.step + (self.reverse and -1 or 1), 1, self.count)
+
   self.process(self.event[self.step])
   self.metro.time = self.time[self.step] * self.time_factor
-  --print("next time "..self.metro.time)
+
   self.metro:start()
 end
 
@@ -141,12 +147,12 @@ function pattern:stop()
 end
 
 --- set overdub
-function pattern:set_overdub(s)
-  if s==1 and self.play == 1 and self.rec == 0 then
-    self.overdub = 1
-  else
-    self.overdub = 0
-  end
-end
+-- function pattern:set_overdub(s)
+--   if s==1 and self.play == 1 and self.rec == 0 then
+--     self.overdub = 1
+--   else
+--     self.overdub = 0
+--   end
+-- end
 
 return pattern

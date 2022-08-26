@@ -9,7 +9,7 @@ local polysub = require 'polysub'
 engine.name = 'PolySub'
 
 --include modified pattern_time with reverse option
-pattern_time = include 'lib/pattern_time_reverse'
+local pattern_time = include 'lib/pattern_time_reverse'
 pat = pattern_time.new()
 
 --converstion between x,y coordinates (1-based) & bit index (0-based)
@@ -160,11 +160,18 @@ pos = {
 }
 
 rec_text = 'record'
+dir_text = '>>>'
+
 function redraw()
     screen.clear()
 
     screen.move(pos.k.x[2], pos.k.y[2])
     screen.text(rec_text)
+    
+    if pat.count > 0 then
+        screen.move(pos.e.x[2], pos.e.y[2])
+        screen.text(dir_text)
+    end
 
     screen.update()
 end
@@ -198,5 +205,16 @@ function key(n, z)
 end
 
 function enc(n, d)
+    if n==2 and pat.count > 0 then
+        if d > 0 then
+            pat:set_reverse(false)
+            dir_text = '>>>'
+        else
+            pat:set_reverse(true)
+            dir_text = '<<<'
+        end
+        
+        redraw()
+    end
 end
 
