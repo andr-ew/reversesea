@@ -68,19 +68,16 @@ grid_data = 0
 function process_grid_data(new_data)
     local old_data = grid_data
 
+    --send the indices of *changed* bits (high & low) into to note on & note off functions
     binary_difference(new_data, old_data, note_on, note_off)
     
     grid_data = new_data
     grid_is_dirty = true
 end
+--this function is the callback for the pattern recorder
 pat.process = process_grid_data
 
---send updated grid data to pattern & process it
-function set_grid_data(new_data)
-    pat:watch(new_data)
-    process_grid_data(new_data)
-end
-
+--clear the grid data, simply by setting it to the intial value, 0
 function clear_grid_data()
     process_grid_data(0)
 end
@@ -89,6 +86,7 @@ end
 function g.key(x, y, z)
     local new_data
 
+    --set or unset a bit in the grid data, assign it to new_data
     local bit = xy_to_bit(x, y)
     if z>0 then
         new_data = binary_set(grid_data, bit)
@@ -96,7 +94,9 @@ function g.key(x, y, z)
         new_data = binary_clear(grid_data, bit)
     end
     
-    set_grid_data(new_data)
+    --send updated grid data to pattern + process it in real time
+    pat:watch(new_data)
+    process_grid_data(new_data)
 end
 
 -- grid drawing & render loop
@@ -127,7 +127,7 @@ end)
 --pythagorean major pent, ref: https://en.wikipedia.org/wiki/Pythagorean_tuning 
 scale = { 1/1, 9/8, 81/64, 3/2, 27/16 }
 
---playing notes(based on bit)
+--playing notes(based on bit index)
 function note_on(bit)
     local id = bit + 1
     local oct = (bit//#scale)
