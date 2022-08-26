@@ -1,0 +1,4 @@
+-- reversible polyphonic 
+-- pattern instrument demo
+--
+-- 0.0.0 @andrew
