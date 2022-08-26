@@ -2,6 +2,10 @@
 -- pattern instrument demo
 --
 -- 0.1.0 @andrew
+--
+-- grid (left half): play notes
+-- K2: record pattern
+-- E2: set direction
 
 g = grid.connect()
 
