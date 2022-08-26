@@ -57,7 +57,6 @@ function binary_difference(new_data, old_data, fn_added, fn_removed)
     end
 end
 
-
 --grid data structure, an integer which will be treated as binary data
 --  IMPORTANT: an ineger in lua may only store 64 bits. so a key limitation of this method
 --             is that only 64 keys of the grid can be stored.
@@ -66,13 +65,24 @@ end
 grid_data = 0
 
 --update grid data, and play notes *based on the change of data*
-function set_grid_data(new_data)
+function process_grid_data(new_data)
     local old_data = grid_data
 
     binary_difference(new_data, old_data, note_on, note_off)
     
     grid_data = new_data
     grid_is_dirty = true
+end
+pat.process = process_grid_data
+
+--send updated grid data to pattern & process it
+function set_grid_data(new_data)
+    pat:watch(new_data)
+    process_grid_data(new_data)
+end
+
+function clear_grid_data()
+    process_grid_data(0)
 end
 
 --grid input
@@ -138,10 +148,53 @@ function init()
     polysub:params()
 end
 
+pos = {
+    k = {
+        x = { [2] = 2,        [3] = 64       },
+        y = { [2] = 64 * 7/8, [3] = 64 * 7/8 },
+    },
+    e = {
+        x = { [2] = 2,        [3] = 64       },
+        y = { [2] = 64 * 5/8, [3] = 64 * 5/8 },
+    },
+}
+
+rec_text = 'record'
 function redraw()
+    screen.clear()
+
+    screen.move(pos.k.x[2], pos.k.y[2])
+    screen.text(rec_text)
+
+    screen.update()
 end
 
 function key(n, z)
+    if z>0 then
+        if n==2 then
+            if pat.rec == 0 then
+                if pat.count > 0 then
+                    pat:stop()
+                    clear_grid_data(0)                
+                    pat:clear()
+                    rec_text = 'record'
+                else
+                    pat:rec_start()
+                    rec_text = 'recording...'
+                end
+            elseif pat.rec == 1 then
+                pat:rec_stop()
+
+                if pat.count > 0 then
+                    pat:start()
+                    rec_text = 'stop'
+                end
+            end
+        elseif n == 3 then
+        end
+
+        redraw()
+    end
 end
 
 function enc(n, d)
