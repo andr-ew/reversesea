@@ -22,7 +22,7 @@ rather than recording & storing _events_ associated with the grid, the pattern r
 
 ## problem 2
 
-the most common way to store this kind of data in lua are tables, however tables are [mutable](https://en.wikipedia.org/wiki/Immutable_object), meaning that in order to store multiple versions of a table, you have to make a full copy of the table every time. this is sort of a hasstle, and also not the most efficient use of resources.
+the most common way to store this kind of data in lua are tables, however tables are [mutable](https://en.wikipedia.org/wiki/Immutable_object), meaning that in order to store multiple versions of a table, you have to make a full copy of the table every time. this is sort of a hassle, and also not the most efficient use of resources.
 
 ## solution 2
 
