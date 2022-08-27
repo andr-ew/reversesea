@@ -18,7 +18,7 @@ earthsea records & stores its patterns as a series of events (key on, key off), 
 
 ## solution 1
 
-rather than recording & storing _events_ associated with the grid, the pattern recorder should record & store _data_ assoiated with the grid – i.e. the full list of which keys are held at any given time throuout the pattern.
+rather than recording & storing **_events_** associated with the grid, the pattern recorder should record & store **_data_** assoiated with the grid – i.e. the full list of which keys are held at any given time throuout the pattern.
 
 ## problem 2
 
