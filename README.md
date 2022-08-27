@@ -14,7 +14,7 @@ a minimal reduction of [ash/earthsea](https://llllllll.co/t/ash-a-small-collecti
 
 ## problem 1
 
-earthsea records & stores its patterns as a series of events (key on, key off), input from the grid. playing back those events in reverse, won't acheive the desired results, as on & off messages will be flipped. moreover, there's a high possibility of stuck notes if each key on event is not matched with a key off.
+earthsea records & stores its patterns as a series of events (key on, key off), input from the grid. playing back those events in reverse won't acheive the desired results, as on & off messages will be flipped. moreover, there's a high possibility of stuck notes if each key on event is not matched with a key off.
 
 ## solution 1
 
