@@ -10,7 +10,7 @@ K2: record pattern
 E2: set direction
 ```
 
-a minimal reduction of [ash/earthsea](https://llllllll.co/t/ash-a-small-collection/21349) (and it's [pattern_time](https://github.com/monome/norns/blob/main/lua/lib/pattern_time.lua) library), which adds a reverse function to the pattern recorder. a change that seems simple on the surface, but is actually quite complex once you dig into the implimentation. hence: this small study : )
+a minimal reduction of [ash/earthsea](https://llllllll.co/t/ash-a-small-collection/21349) (and it's associated [pattern_time](https://github.com/monome/norns/blob/main/lua/lib/pattern_time.lua) library), which adds a reverse function to the pattern recorder. a change that seems simple on the surface, but is actually quite complex once you dig into the implimentation. hence: this small study : )
 
 ## problem 1
 
