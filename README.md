@@ -34,7 +34,7 @@ now that the pattern recorder is storing data rather than input, how can we tran
 
 ## solution 3
 
-binary operations solve this problem nicely ! the solution is to [exlusive or](https://en.wikipedia.org/wiki/Exclusive_or) the most recent data set with the one right before it – which reveals the bits that have _changed_ between the two data sets. then, loop over each bit & run either the note on or note on function for each changed bit. see the `binary_difference` function in the script for a precise implimentation.
+binary operations solve this problem nicely ! the solution is to [exlusive or](https://en.wikipedia.org/wiki/Exclusive_or) the most recent data set with the one right before it – which reveals the bits that have _changed_ between the two data sets. then, loop over each bit & run either the note on or note on function for each changed bit. see the `binary_difference` function in the script for the precise implimentation.
 
 ## problem 4
 
