@@ -30,7 +30,7 @@ since there are only two possible states of each key at any given time, we can s
 
 ## problem 3
 
-now that the pattern recorder is storing data rather than input, how can we transpate that data into the note on & note off messages used by engines or midi?
+now that the pattern recorder is storing data rather than input, how can we translate that data into the note on & note off messages used by engines or midi?
 
 ## solution 3
 
