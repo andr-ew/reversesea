@@ -42,4 +42,4 @@ unfortunately, on norns (& most all computers), one integer variable can only st
 
 ## solution 4
 
-an exercise for the reader ;) !! this script currently limits itself to the left half of a 128 grid for demonstaration purposes, but it would be trivial to map the full grid to two integers, for the left & right sides of the grid.
+an exercise for the reader ; ) !! this script currently limits itself to the left half of a 128 grid for demonstaration purposes, but it would be trivial to map the full grid to two integers, for the left & right sides of the grid.
