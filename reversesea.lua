@@ -1,10 +1,11 @@
 -- reversible polyphonic 
 -- pattern instrument demo
 --
--- 0.1.0 @andrew
+-- 0.2.0 @andrew
 --
--- grid (left half): play notes
+-- grid: play notes
 -- K2: record pattern
+-- K3: play/pause pattern
 -- E2: set direction
 
 g = grid.connect()
@@ -12,106 +13,92 @@ g = grid.connect()
 local polysub = require 'polysub'
 engine.name = 'PolySub'
 
---include modified pattern_time with reverse option
-local pattern_time = include 'lib/pattern_time_reverse'
+local pattern_time = include 'lib/pattern_time_extended'
 pat = pattern_time.new()
 
---converstion between x,y coordinates (1-based) & bit index (0-based)
+--grid info 
+local width = 16
+local height = 8
+local count = width * height
 
-function xy_to_bit(x, y, width, height)
-    local w = width or 8
-    local h = height or 8
-    return (h - y) * w + (x-1)
+function xy_to_table_index(x, y)
+    return (height - y) * width + x
 end
-function bit_to_xy(bit, width, height)
-    local w = width or 8
-    local h = height or 8
-    return (bit % w)+1, h - ((bit // w)+0)
-end
-
---utility functions for working with binary data, based on the bit index
---  NOTE: these do *not* edit the data in place, as with a table. they return new data, 
---        which you can reassign to the 'grid_data' variable (see: mutablity in programming).
---
---  useful ref: https://wiki.xxiivv.com/site/binary.html
-
-function binary_get(data, bit) --get bit
-    return (data >> bit) & 1
-end
-function binary_set(data, bit) --set bit to 1
-    return data | (1 << bit)
-end
-function binary_clear(data, bit) --set bit to 0
-    return data & ~(1 << bit)
-end
-function binary_toggle(data, n, z) --not using this one, but it's a handy referece!
-    return data ~ (1 << bit)
-end
---compare two datasets, run a function for each bit that has changed between the two sets
-function binary_difference(new_data, old_data, fn_added, fn_removed)
-    local changed = new_data ~ old_data
-    for bit = 0,63 do
-        if binary_get(changed, bit) > 0 then
-            if binary_get(new_data, bit) > 0 then
-                fn_added(bit)
-            else
-                fn_removed(bit)
-            end
-        end
-    end
+function table_index_to_xy(index)
+    return ((index - 1) % width) + 1, height - ((index - 1) // width)
 end
 
---grid data structure, an integer which will be treated as binary data
---  IMPORTANT: an ineger in lua may only store 64 bits. so a key limitation of this method
---             is that only 64 keys of the grid can be stored.
---             in this script, we're only using the left half of a 128 grid
---  initialized as 0 (all keys off)
-grid_data = 0
+grid_state = {}
 
 --update grid data, and play notes *based on the change of data*
-function process_grid_data(new_data)
-    local old_data = grid_data
+function process_grid_data(new_state)
+    local old_state = grid_state
 
-    --send the indices of *changed* bits (high & low) into to note on & note off functions
-    binary_difference(new_data, old_data, note_on, note_off)
+    for i = 1, count do
+        local new = new_state[i] or 0
+        local old = old_state[i] or 0
+
+        if new==1 and old==0 then note_on(i)
+        elseif new==0 and old==1 then note_off(i) end
+    end
     
-    grid_data = new_data
+    grid_state = new_state
+
     grid_is_dirty = true
 end
 --this function is the callback for the pattern recorder
 pat.process = process_grid_data
 
---clear the grid data, simply by setting it to the intial value, 0
-function clear_grid_data()
-    process_grid_data(0)
+function set_grid_data(new_state)
+    --watch & process new state
+    pat:watch(new_state)
+    process_grid_data(new_state)
 end
+
+--clear the grid & turn off playing notes, simply by setting it to a blank table
+function clear_grid_data()
+    process_grid_data({})
+end
+
+--insert a snapshot of the current state into the pattern, if neccesary
+function insert_snapshot()
+    local has_keys = false
+    for i = 1, count do if (grid_state[i] or 0) > 0 then  
+        has_keys = true; break
+    end end
+
+    if has_keys then set_grid_data(grid_state) end
+end
+
+--set callbacks to remove stuck notes & snapshot current held state
+pat.clear_callback = clear_grid_data
+pat.start_of_record_callback = insert_snapshot
+pat.end_of_rec_callback = insert_snapshot
+pat.end_callback = clear_grid_data
 
 --grid input
 function g.key(x, y, z)
-    local new_data
+    local old_state = grid_state
+     
+    --the grid_state table is copied for every input, this means the old state can be stored in th epattern without modification
+    local new_state = {}
+    for k,v in pairs(old_state) do new_state[k] = v end
 
-    --set or unset a bit in the grid data, assign it to new_data
-    local bit = xy_to_bit(x, y)
-    if z>0 then
-        new_data = binary_set(grid_data, bit)
-    else
-        new_data = binary_clear(grid_data, bit)
-    end
+    --update the new state only with input
+    new_state[xy_to_table_index(x, y)] = z
     
-    --send updated grid data to pattern + process it in real time
-    pat:watch(new_data)
-    process_grid_data(new_data)
+    --set the state
+    set_grid_data(new_state)
 end
 
 -- grid drawing & render loop
-
 function grid_redraw()
     g:all(0)
 
-    --render each bit as a key on the grid
-    for bit = 0,127 do
-        local x, y = bit_to_xy(bit)
-        local lvl = binary_get(grid_data, bit) * 15
+    --render every key from grid_state
+    for i = 1,count do
+        local x, y = table_index_to_xy(i)
+        local lvl = (grid_state[i] or 0) * 15
         g:led(x, y, lvl)
     end
   
@@ -131,18 +118,19 @@ end)
 --pythagorean major pent, ref: https://en.wikipedia.org/wiki/Pythagorean_tuning 
 scale = { 1/1, 9/8, 81/64, 3/2, 27/16 }
 
---playing notes(based on bit index)
-function note_on(bit)
-    local id = bit + 1
-    local oct = (bit//#scale)
-    local deg = (bit % #scale) + 1
+--playing notes(based on table index)
+function note_on(id)
+    local x, y = table_index_to_xy(id)     
+    local column, row = x, (height - y) + 1
+
+    local oct = ((column - 1)//#scale) + row
+    local deg = ((column - 1) % #scale) + 1
     local ratio = scale[deg]
     local hz = 110 * 2^(oct - 5) * ratio
 
     engine.start(id, hz)
 end
-function note_off(bit)
-    local id = bit + 1
+function note_off(id)
     engine.stop(id)
 end
 
@@ -164,6 +152,7 @@ pos = {
 }
 
 rec_text = 'record'
+play_text = 'playing'
 dir_text = '>>>'
 
 function redraw()
@@ -172,7 +161,10 @@ function redraw()
     screen.move(pos.k.x[2], pos.k.y[2])
     screen.text(rec_text)
     
-    if pat.count > 0 then
+    if pat.count > 0 and pat.rec == 0 then
+        screen.move(pos.k.x[3], pos.k.y[3])
+        screen.text(play_text)
+    
         screen.move(pos.e.x[2], pos.e.y[2])
         screen.text(dir_text)
     end
@@ -186,7 +178,6 @@ function key(n, z)
             if pat.rec == 0 then
                 if pat.count > 0 then
                     pat:stop()
-                    clear_grid_data(0)                
                     pat:clear()
                     rec_text = 'record'
                 else
@@ -198,10 +189,17 @@ function key(n, z)
 
                 if pat.count > 0 then
                     pat:start()
-                    rec_text = 'stop'
+                    rec_text = 'clear'
                 end
             end
         elseif n == 3 then
+            if pat.play > 0 then
+                pat:stop()
+                play_text = 'pausing'
+            else
+                pat:resume()
+                play_text = 'playing'
+            end
         end
 
         redraw()
