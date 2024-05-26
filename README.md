@@ -28,4 +28,4 @@ compared to [ash/earthsea](https://llllllll.co/t/ash-a-small-collection/21349), 
 - notes held at the end of a recording are not stuck
 - notes held at the beginning of a recording are included in the pattern
 
-a possible con is performance: a new table copy is created for every grid input
+a possible con is performance – a new table copy is created for every grid input
