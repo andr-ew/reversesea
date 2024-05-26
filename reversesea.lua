@@ -21,6 +21,11 @@ local width = 16
 local height = 8
 local count = width * height
 
+--on/off key states for the grid. indexed 1 - 128, values stored as 1/0 (nil assumed 0)
+--    the value at this table variable should NEVER be mutated, ONLY replaced with a new table
+grid_state = {}
+
+--convert x/y coordinates to the 1-128 index used for grid_state
 function xy_to_table_index(x, y)
     return (height - y) * width + x
 end
@@ -28,10 +33,8 @@ function table_index_to_xy(index)
     return ((index - 1) % width) + 1, height - ((index - 1) // width)
 end
 
-grid_state = {}
-
---update grid data, and play notes *based on the change of data*
-function process_grid_data(new_state)
+--update grid state, and play notes *based on the change of state*
+function process_grid_state(new_state)
     local old_state = grid_state
 
     for i = 1, count do
@@ -46,18 +49,19 @@ function process_grid_data(new_state)
 
     grid_is_dirty = true
 end
---this function is the callback for the pattern recorder
-pat.process = process_grid_data
 
-function set_grid_data(new_state)
-    --watch & process new state
+--this function is the callback for the pattern recorder
+pat.process = process_grid_state
+
+--watch & process new state
+function set_grid_state(new_state)
     pat:watch(new_state)
-    process_grid_data(new_state)
+    process_grid_state(new_state)
 end
 
 --clear the grid & turn off playing notes, simply by setting it to a blank table
-function clear_grid_data()
-    process_grid_data({})
+function clear_grid_state()
+    process_grid_state({})
 end
 
 --insert a snapshot of the current state into the pattern, if neccesary
@@ -67,28 +71,28 @@ function insert_snapshot()
         has_keys = true; break
     end end
 
-    if has_keys then set_grid_data(grid_state) end
+    if has_keys then set_grid_state(grid_state) end
 end
 
 --set callbacks to remove stuck notes & snapshot current held state
-pat.clear_callback = clear_grid_data
+pat.clear_callback = clear_grid_state
 pat.start_of_record_callback = insert_snapshot
 pat.end_of_rec_callback = insert_snapshot
-pat.end_callback = clear_grid_data
+pat.end_callback = clear_grid_state
 
 --grid input
 function g.key(x, y, z)
     local old_state = grid_state
      
-    --the grid_state table is copied for every input, this means the old state can be stored in th epattern without modification
+    --the grid_state table is copied for every input, this means the old state can be stored in th e pattern without modification
     local new_state = {}
     for k,v in pairs(old_state) do new_state[k] = v end
 
     --update the new state only with input
     new_state[xy_to_table_index(x, y)] = z
     
-    --set the state
-    set_grid_data(new_state)
+    --set the grid state to the new state
+    set_grid_state(new_state)
 end
 
 -- grid drawing & render loop
