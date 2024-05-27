@@ -23,7 +23,7 @@ a reduction of [ash/earthsea](https://llllllll.co/t/ash-a-small-collection/21349
   - `start_of_record_callback`
   - `clear_callback`
  
-compared to [ash/earthsea](https://llllllll.co/t/ash-a-small-collection/21349), the demonstrated pattern logic uses a simple immutable state system with a few advantages:
+compared to [ash/earthsea](https://llllllll.co/t/ash-a-small-collection/21349), the demo'd pattern logic uses a simple immutable state system with a few advantages:
 - ability to reverse playback direction
 - notes held at the end of a recording are not stuck
 - notes held at the beginning of a recording are included in the pattern
