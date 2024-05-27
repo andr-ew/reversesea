@@ -25,7 +25,7 @@ local count = width * height
 --    the value at this table variable should NEVER be mutated, ONLY replaced with a new table
 grid_state = {}
 
---convert x/y coordinates to the 1-128 index used for grid_state
+--conversion between x/y coordinates & the 1-128 index used for grid_state
 function xy_to_table_index(x, y)
     return (height - y) * width + x
 end
