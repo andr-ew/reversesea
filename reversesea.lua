@@ -84,7 +84,7 @@ pat.end_callback = clear_grid_state
 function g.key(x, y, z)
     local old_state = grid_state
      
-    --the grid_state table is copied for every input, this means the old state can be stored in th e pattern without modification
+    --the grid_state table is copied for every input, this means the old state can be stored in the pattern without modification
     local new_state = {}
     for k,v in pairs(old_state) do new_state[k] = v end
 
